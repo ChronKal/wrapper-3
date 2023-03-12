@@ -286,7 +286,7 @@ describe('Name Wrapper', () => {
       ).to.be.revertedWith('IncompatibleParent()')
     })
 
-    it('Can re-wrap a name that was reassigned by an unwrapped parent', async () => {
+    it('Cannot wrap a domain with an an unwrapped parent', async () => {
       expect(await NameWrapper.ownerOf(namehash('xyz'))).to.equal(EMPTY_ADDRESS)
 
       await EnsRegistry.setApprovalForAll(NameWrapper.address, true)
@@ -295,6 +295,11 @@ describe('Name Wrapper', () => {
         labelhash('sub'),
         account,
       )
+ parent-wrapped
+      await expect(
+        NameWrapper.wrap(encodeName('sub.xyz'), account, EMPTY_ADDRESS)
+      ).to.be.revertedWith(`ParentMustBeWrapped("${namehash('sub.xyz')}")`)
+=======
       await NameWrapper.wrap(encodeName('sub.xyz'), account, EMPTY_ADDRESS)
 
       await EnsRegistry.setSubnodeOwner(
@@ -336,6 +341,7 @@ describe('Name Wrapper', () => {
 
       expect(await NameWrapper2.ownerOf(nameHash)).to.equal(account2)
       expect(await EnsRegistry.owner(nameHash)).to.equal(NameWrapper.address)
+ master
     })
 
     it('Will not wrap a name with junk at the end', async () => {

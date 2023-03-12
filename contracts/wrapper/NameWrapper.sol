@@ -1,4 +1,18 @@
 //SPDX-License-Identifier: MIT
+ parent-wrapped
+pragma solidity ^0.8.4;
+
+import "./ERC1155Fuse.sol";
+import "./Controllable.sol";
+import "./INameWrapper.sol";
+import "./IMetadataService.sol";
+import "../registry/ENS.sol";
+import "../ethregistrar/IBaseRegistrar.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./BytesUtil.sol";
+import "hardhat/console.sol";
+=======
 pragma solidity ~0.8.17;
 
 import {ERC1155Fuse, IERC165, IERC1155MetadataURI} from "./ERC1155Fuse.sol";
@@ -13,6 +27,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {BytesUtils} from "./BytesUtils.sol";
 import {ERC20Recoverable} from "../utils/ERC20Recoverable.sol";
+ master
 
 error Unauthorised(bytes32 node, address addr);
 error IncompatibleParent();
@@ -21,10 +36,15 @@ error LabelMismatch(bytes32 labelHash, bytes32 expectedLabelhash);
 error LabelTooShort();
 error LabelTooLong(string label);
 error IncorrectTargetOwner(address owner);
+ parent-wrapped
+error InvalidExpiry(bytes32 node, uint64 expiry);
+error ParentMustBeWrapped(bytes32 node);
+=======
 error CannotUpgrade();
 error OperationProhibited(bytes32 node);
 error NameIsNotWrapped();
 error NameIsStillExpired();
+ master
 
 contract NameWrapper is
     Ownable,
@@ -351,6 +371,13 @@ contract NameWrapper is
     ) external onlyController returns (uint256 expires) {
         bytes32 node = _makeNode(ETH_NODE, bytes32(tokenId));
 
+ parent-wrapped
+        expires = registrar.renew(tokenId, duration);
+        (address owner, uint32 fuses, uint64 oldExpiry) = getData(
+            uint256(node)
+        );
+        expiry = _normaliseExpiry(expiry, oldExpiry, uint64(expires));
+=======
         uint256 registrarExpiry = registrar.renew(tokenId, duration);
 
         // Do not set anything in wrapper if name is not wrapped
@@ -367,6 +394,7 @@ contract NameWrapper is
 
         // set expiry in Wrapper
         uint64 expiry = uint64(registrarExpiry) + GRACE_PERIOD;
+ master
 
         //use super to allow names expired on the wrapper, but not expired on the registrar to renew()
         (address owner, uint32 fuses, ) = super.getData(uint256(node));
@@ -396,6 +424,11 @@ contract NameWrapper is
 
         if (parentNode == ETH_NODE) {
             revert IncompatibleParent();
+        }
+
+        // if parent is not the ROOT_NODE and is not wrapped
+        if (parentNode != ROOT_NODE && ens.owner(parentNode) != address(this)) {
+            revert ParentMustBeWrapped(node);
         }
 
         address owner = ens.owner(node);
