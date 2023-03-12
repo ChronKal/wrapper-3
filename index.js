@@ -1,4 +1,3 @@
-const BaseRegistrar = require('./build/contracts/BaseRegistrar')
 const BaseRegistrarImplementation = require('./build/contracts/BaseRegistrarImplementation')
 const BulkRenewal = require('./build/contracts/BulkRenewal')
 const ENS = require('./build/contracts/ENS')
@@ -7,8 +6,9 @@ const ENSRegistryWithFallback = require('./build/contracts/ENSRegistryWithFallba
 const ExponentialPremiumPriceOracle = require('./build/contracts/ExponentialPremiumPriceOracle')
 const ETHRegistrarController = require('./build/contracts/ETHRegistrarController')
 const FIFSRegistrar = require('./build/contracts/FIFSRegistrar')
+const IBaseRegistrar = require('./build/contracts/IBaseRegistrar')
+const IPriceOracle = require('./build/contracts/IPriceOracle')
 const LinearPremiumPriceOracle = require('./build/contracts/LinearPremiumPriceOracle')
-const PriceOracle = require('./build/contracts/PriceOracle')
 const PublicResolver = require('./build/contracts/PublicResolver')
 const Resolver = require('./build/contracts/Resolver')
 const ReverseRegistrar = require('./build/contracts/ReverseRegistrar')
@@ -25,10 +25,8 @@ const RSASHA256Algorithm = require('./build/contracts/RSASHA256Algorithm')
 const RSASHA1Algorithm = require('./build/contracts/RSASHA1Algorithm')
 const SHA256Digest = require('./build/contracts/SHA256Digest')
 const SHA1Digest = require('./build/contracts/SHA1Digest')
-const SHA1NSEC3Digest = require('./build/contracts/SHA1NSEC3Digest')
 
 module.exports = {
-  BaseRegistrar,
   BaseRegistrarImplementation,
   BulkRenewal,
   ENS,
@@ -37,8 +35,9 @@ module.exports = {
   ExponentialPremiumPriceOracle,
   ETHRegistrarController,
   FIFSRegistrar,
+  IBaseRegistrar,
+  IPriceOracle,
   LinearPremiumPriceOracle,
-  PriceOracle,
   PublicResolver,
   Resolver,
   ReverseRegistrar,
@@ -54,5 +53,4 @@ module.exports = {
   RSASHA1Algorithm,
   SHA256Digest,
   SHA1Digest,
-  SHA1NSEC3Digest,
 }
