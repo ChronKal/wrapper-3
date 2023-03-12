@@ -5,7 +5,7 @@ import "./IABIResolver.sol";
 import "../ResolverBase.sol";
 
 abstract contract ABIResolver is IABIResolver, ResolverBase {
-    mapping(bytes32 => mapping(uint256 => bytes)) abis;
+    mapping(uint64 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_abis;
 
     /**
      * Sets the ABI associated with an ENS node.
@@ -23,7 +23,7 @@ abstract contract ABIResolver is IABIResolver, ResolverBase {
         // Content types must be powers of 2
         require(((contentType - 1) & contentType) == 0);
 
-        abis[node][contentType] = data;
+        versionable_abis[recordVersions[node]][node][contentType] = data;
         emit ABIChanged(node, contentType);
     }
 
@@ -35,14 +35,13 @@ abstract contract ABIResolver is IABIResolver, ResolverBase {
      * @return contentType The content type of the return value
      * @return data The ABI data
      */
-    function ABI(bytes32 node, uint256 contentTypes)
-        external
-        view
-        virtual
-        override
-        returns (uint256, bytes memory)
-    {
-        mapping(uint256 => bytes) storage abiset = abis[node];
+    function ABI(
+        bytes32 node,
+        uint256 contentTypes
+    ) external view virtual override returns (uint256, bytes memory) {
+        mapping(uint256 => bytes) storage abiset = versionable_abis[
+            recordVersions[node]
+        ][node];
 
         for (
             uint256 contentType = 1;
@@ -60,13 +59,9 @@ abstract contract ABIResolver is IABIResolver, ResolverBase {
         return (0, bytes(""));
     }
 
-    function supportsInterface(bytes4 interfaceID)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public view virtual override returns (bool) {
         return
             interfaceID == type(IABIResolver).interfaceId ||
             super.supportsInterface(interfaceID);

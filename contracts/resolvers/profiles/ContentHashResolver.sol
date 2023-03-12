@@ -5,7 +5,7 @@ import "../ResolverBase.sol";
 import "./IContentHashResolver.sol";
 
 abstract contract ContentHashResolver is IContentHashResolver, ResolverBase {
-    mapping(bytes32 => bytes) hashes;
+    mapping(uint64 => mapping(bytes32 => bytes)) versionable_hashes;
 
     /**
      * Sets the contenthash associated with an ENS node.
@@ -13,12 +13,11 @@ abstract contract ContentHashResolver is IContentHashResolver, ResolverBase {
      * @param node The node to update.
      * @param hash The contenthash to set
      */
-    function setContenthash(bytes32 node, bytes calldata hash)
-        external
-        virtual
-        authorised(node)
-    {
-        hashes[node] = hash;
+    function setContenthash(
+        bytes32 node,
+        bytes calldata hash
+    ) external virtual authorised(node) {
+        versionable_hashes[recordVersions[node]][node] = hash;
         emit ContenthashChanged(node, hash);
     }
 
@@ -27,23 +26,15 @@ abstract contract ContentHashResolver is IContentHashResolver, ResolverBase {
      * @param node The ENS node to query.
      * @return The associated contenthash.
      */
-    function contenthash(bytes32 node)
-        external
-        view
-        virtual
-        override
-        returns (bytes memory)
-    {
-        return hashes[node];
+    function contenthash(
+        bytes32 node
+    ) external view virtual override returns (bytes memory) {
+        return versionable_hashes[recordVersions[node]][node];
     }
 
-    function supportsInterface(bytes4 interfaceID)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public view virtual override returns (bool) {
         return
             interfaceID == type(IContentHashResolver).interfaceId ||
             super.supportsInterface(interfaceID);

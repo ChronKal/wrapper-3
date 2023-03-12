@@ -7,7 +7,7 @@ import "./AddrResolver.sol";
 import "./IInterfaceResolver.sol";
 
 abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
-    mapping(bytes32 => mapping(bytes4 => address)) interfaces;
+    mapping(uint64 => mapping(bytes32 => mapping(bytes4 => address))) versionable_interfaces;
 
     /**
      * Sets an interface associated with a name.
@@ -21,7 +21,9 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         bytes4 interfaceID,
         address implementer
     ) external virtual authorised(node) {
-        interfaces[node][interfaceID] = implementer;
+        versionable_interfaces[recordVersions[node]][node][
+            interfaceID
+        ] = implementer;
         emit InterfaceChanged(node, interfaceID, implementer);
     }
 
@@ -35,14 +37,13 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
      * @param interfaceID The EIP 165 interface ID to check for.
      * @return The address that implements this interface, or 0 if the interface is unsupported.
      */
-    function interfaceImplementer(bytes32 node, bytes4 interfaceID)
-        external
-        view
-        virtual
-        override
-        returns (address)
-    {
-        address implementer = interfaces[node][interfaceID];
+    function interfaceImplementer(
+        bytes32 node,
+        bytes4 interfaceID
+    ) external view virtual override returns (address) {
+        address implementer = versionable_interfaces[recordVersions[node]][
+            node
+        ][interfaceID];
         if (implementer != address(0)) {
             return implementer;
         }
@@ -74,13 +75,9 @@ abstract contract InterfaceResolver is IInterfaceResolver, AddrResolver {
         return a;
     }
 
-    function supportsInterface(bytes4 interfaceID)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public view virtual override returns (bool) {
         return
             interfaceID == type(IInterfaceResolver).interfaceId ||
             super.supportsInterface(interfaceID);

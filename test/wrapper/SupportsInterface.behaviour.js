@@ -50,25 +50,38 @@ const INTERFACES = {
   ],
   INameWrapper: [
     'ens()',
+    'supportsInterface(bytes4)',
     'registrar()',
     'metadataService()',
     'names(bytes32)',
+    'name()',
+    'upgradeContract()',
     'wrap(bytes,address,address)',
-    'wrapETH2LD(string,address,uint32,uint64,address)',
-    'registerAndWrapETH2LD(string,address,uint256,address,uint32,uint64)',
-    'renew(uint256,uint256,uint64)',
+    'wrapETH2LD(string,address,uint16,address)',
+    'registerAndWrapETH2LD(string,address,uint256,address,uint16)',
+    'renew(uint256,uint256)',
     'unwrap(bytes32,bytes32,address)',
     'unwrapETH2LD(bytes32,address,address)',
-    'setFuses(bytes32,uint32)',
+    'upgrade(bytes,bytes)',
+    'setFuses(bytes32,uint16)',
     'setChildFuses(bytes32,bytes32,uint32,uint64)',
     'setSubnodeRecord(bytes32,string,address,address,uint64,uint32,uint64)',
     'setRecord(bytes32,address,address,uint64)',
     'setSubnodeOwner(bytes32,string,address,uint32,uint64)',
-    'isTokenOwnerOrApproved(bytes32,address)',
+    'extendExpiry(bytes32,bytes32,uint64)',
+    'canModifyName(bytes32,address)',
     'setResolver(bytes32,address)',
     'setTTL(bytes32,uint64)',
+    'getData(uint256)',
+    'setMetadataService(address)',
+    'uri(uint256)',
+    'setUpgradeContract(address)',
     'ownerOf(uint256)',
+    'approve(address,uint256)',
+    'getApproved(uint256)',
     'allFusesBurned(bytes32,uint32)',
+    'isWrapped(bytes32)',
+    'isWrapped(bytes32,bytes32)',
   ],
 }
 
@@ -83,36 +96,36 @@ for (const k of Object.getOwnPropertyNames(INTERFACES)) {
 }
 
 function shouldSupportInterfaces(contractUnderTest, interfaces = []) {
-  describe('Contract interface', function() {
-    beforeEach(function() {
+  describe('Contract interface', function () {
+    beforeEach(function () {
       this.contractUnderTest = contractUnderTest()
     })
 
     for (const k of interfaces) {
       const interfaceId = INTERFACE_IDS[k]
-      describe(k, function() {
-        describe("ERC165's supportsInterface(bytes4)", function() {
-          it('uses less than 30k gas [skip-on-coverage]', async function() {
+      describe(k, function () {
+        describe("ERC165's supportsInterface(bytes4)", function () {
+          it('uses less than 30k gas [skip-on-coverage]', async function () {
             expect(
               await this.contractUnderTest.estimateGas.supportsInterface(
-                interfaceId
-              )
+                interfaceId,
+              ),
             ).to.be.lte(30000)
           })
 
-          it('claims support', async function() {
+          it('claims support', async function () {
             expect(
-              await this.contractUnderTest.supportsInterface(interfaceId)
+              await this.contractUnderTest.supportsInterface(interfaceId),
             ).to.equal(true)
           })
         })
 
         for (const fnName of INTERFACES[k]) {
           const fnSig = FN_SIGNATURES[fnName]
-          describe(fnName, function() {
-            it('has to be implemented', function() {
+          describe(fnName, function () {
+            it('has to be implemented', function () {
               expect(
-                this.contractUnderTest.interface.getFunction(fnSig)
+                this.contractUnderTest.interface.getFunction(fnSig),
               ).to.not.throw
             })
           })
@@ -120,9 +133,9 @@ function shouldSupportInterfaces(contractUnderTest, interfaces = []) {
       })
     }
 
-    it('does not implement the forbidden interface', async function() {
+    it('does not implement the forbidden interface', async function () {
       expect(
-        await this.contractUnderTest.supportsInterface('0xffffffff')
+        await this.contractUnderTest.supportsInterface('0xffffffff'),
       ).to.equal(false)
     })
   })

@@ -1,7 +1,7 @@
-pragma solidity >=0.8.4;
+//SPDX-License-Identifier: MIT
+pragma solidity ~0.8.17;
 
 import "./IPriceOracle.sol";
-import "./SafeMath.sol";
 import "./StringUtils.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -12,7 +12,6 @@ interface AggregatorInterface {
 
 // StablePriceOracle sets a price in USD, based on an oracle.
 contract StablePriceOracle is IPriceOracle {
-    using SafeMath for *;
     using StringUtils for *;
 
     // Rent in base price units by length
@@ -95,12 +94,9 @@ contract StablePriceOracle is IPriceOracle {
         return (amount * ethPrice) / 1e8;
     }
 
-    function supportsInterface(bytes4 interfaceID)
-        public
-        view
-        virtual
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public view virtual returns (bool) {
         return
             interfaceID == type(IERC165).interfaceId ||
             interfaceID == type(IPriceOracle).interfaceId;
